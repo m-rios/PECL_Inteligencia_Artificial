@@ -25,30 +25,43 @@
         (list m (- (get_n nodo) (- m (get_m nodo))))))
 
 ;devuelve los sucesores que no han sido evaluados aún
-(define (sucesores nodo cerrados) (remove* cerrados (sucesores_aux nodo)))
+(define (crear_supernodos padre nodos supernodos)
+    (if (empty? nodos) supernodos
+        (crear_supernodos padre 
+            (cdr nodos) 
+            (append supernodos (list (list (car nodos) padre))))))
+(define (sucesores nodo cerrados) 
+    (crear_supernodos nodo (remove* cerrados (sucesores_aux nodo)) null))
 
 ;calcula todos los sucesores de un nodo
-(define (sucesores_aux nodo) (list 
-    (list (llenar_m nodo) nodo)
-    (list (llenar_n nodo) nodo)
-    (list (vaciar_m nodo) nodo)
-    (list (vaciar_n nodo) nodo)
-    (list (volcar_m nodo) nodo)
-    (list (volcar_n nodo) nodo)))
+(define (sucesores_aux nodo) (list (llenar_m nodo) (llenar_n nodo) 
+    (vaciar_m nodo) (vaciar_n nodo) (volcar_m nodo) (volcar_n nodo)))
+
 ;funciones del algoritmo
-;(define abiertos (list (list (list 0 0) null)))
-;(define abiertos2 (append (cdr abiertos) (sucesores (caar abiertos) (append null (caar abiertos)))))
-
-
+;===============================================================================
 ;cerrados solo almacena el nodo, no el padre
 ;abiertos almacena el nodo y su padre (list nodo padre)
 ;arbol almacena el nodo y su padre (list nodo padre)
 (define (algoritmo abiertos cerrados arbol)
-    (if (= p (get_m (caar abiertos))) (append (list (car abiertos)) arbol cerrados)
-        (algoritmo (append (cdr abiertos) (sucesores (caar abiertos) (append cerrados (list (caar abiertos)))))
+    (if (= p (get_m (caar abiertos))) (append (list (car abiertos)) arbol)
+        (algoritmo (append (cdr abiertos) (sucesores (caar abiertos) 
+            (append cerrados (list (caar abiertos)))))
          (append cerrados (list (caar abiertos))) 
          (append (list (car abiertos)) arbol))
         )
     )
 
-(define test (algoritmo (list (list (list 0 0) null)) empty empty))
+;devuelve la sublista que sigue al nodo
+(define (buscar nodo arbol) 
+    (if (eq? (caar arbol) nodo) arbol
+        (buscar nodo (cdr arbol))))
+
+(define (calcular_ruta arbol ruta)
+    (if (empty? (cadar arbol)) (append (list (caar arbol)) ruta)
+        (calcular_ruta (buscar (cadar arbol) (cdr arbol))
+            (append (list (caar arbol)) ruta))))
+
+(define resolver (calcular_ruta (algoritmo (list (list (list 0 0) null)) 
+    empty empty) null))
+
+(define test (algoritmo (list (list (list 1 1) null)) empty empty))
