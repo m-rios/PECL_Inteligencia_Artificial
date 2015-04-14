@@ -5,7 +5,8 @@
 (define (get_m nodo) (car nodo))
 (define (get_n nodo) (cadr nodo))
 (define (get_p nodo) (caddr nodo))
-(define (param_validos m n p) (and (< m n) (<= p m)))
+(define (mcd m n) (if (= n 0) m (mcd n (remainder m n)) ))
+(define (param_validos m n p) (and (< m n) (<= p m)) (= 1 (mcd m n)))
 
 ;operaciones
 ;===============================================================================
@@ -64,31 +65,6 @@
     (if (empty? (cadar arbol)) (append (list (caar arbol)) ruta)
         (calcular_ruta (buscar (cadar arbol) (cdr arbol))
             (append (list (caar arbol)) ruta))))
-
-;indica las operaciones realizadas sobre cada nodo
-(define (modificaciones ruta salida)
-    (if (empty? (cdr ruta)) (append salida (list (car ruta)))
-        (cond 
-            [(equal? (llenar_m (car ruta)) (cadr ruta)) =>
-            (modificaciones (cdr ruta) 
-                (append salida (list (car ruta) 'llenar_m)))]
-            [(equal? (llenar_n (car ruta)) (cadr ruta)) =>
-                        (modificaciones (cdr ruta) 
-                            (append salida (list (car ruta) 'llenar_n)))]
-            [(equal? (vaciar_m (car ruta)) (cadr ruta)) =>
-                        (modificaciones (cdr ruta) 
-                            (append salida (list (car ruta) 'vaciar_m)))]
-            [(equal? (vaciar_n (car ruta)) (cadr ruta)) =>
-                        (modificaciones (cdr ruta) 
-                            (append salida (list (car ruta) 'vaciar_n)))]
-            [(equal? (volcar_m (car ruta)) (cadr ruta)) =>
-                        (modificaciones (cdr ruta) 
-                            (append salida (list (car ruta) 'volcar_m)))]
-            [(equal? (volcar_n (car ruta)) (cadr ruta)) =>
-                        (modificaciones (cdr ruta) 
-                            (append salida (list (car ruta) 'volcar_n)))]
-            )
-        ))
 
 ;manejadores
 ;===============================================================================
