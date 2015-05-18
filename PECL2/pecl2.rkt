@@ -42,6 +42,12 @@
           (explotar-der nodo '() (get-minmax nodo)) ;hijos jugando por la derecha
           (list (list (get-tab nodo) (get-minmax nodo) -1 (get-pun nodo)));mismo nodo, para hacer backtracking
           ))
+;similar a explotar pero para las opciones de jugada. La diferencia es que no añade el nodo actual para
+;backtracking
+(define (explotar-opciones nodo)
+  (append (explotar-izq nodo '() (get-minmax nodo)) ;hijos jugando por la izquierda
+          (explotar-der nodo '() (get-minmax nodo)) ;hijos jugando por la derecha
+          ))
 (define (explotar-izq nodo hijos minmax)
   (if (= 1 (first (get-tab nodo)))
       hijos
@@ -90,7 +96,7 @@
                        ;esa puntuación a la lista de puntuaciones del nivel del nodo
                        (cons (cons (puntuar actual (car puntuaciones)) (cadr puntuaciones))
                              (cddr puntuaciones))
-                       (cons (list (get-tab actual) (get-minmax actual) (get-tipo actual) (min-l (car puntuaciones))) arbol)) ;se añade el nodo puntuado
+                       (cons (list (get-tab actual) (get-minmax actual) (get-tipo actual) (puntuar actual (car puntuaciones))) arbol)) ;se añade el nodo puntuado
               ;si no, tiene que ser no explotado (tipo = -2)
               ((lambda (x) (plantar-aux (car x);actual'
                        (cdr x) ;se añaden hijos menos el primero para busqueda en profundidad
@@ -118,9 +124,29 @@
   (if (equal? (first nodo) '(1 1))
       (if maquina "tu ganas" "perdiste!")
       (if maquina
-          (jugar-aux (not maquina) (jugada (explotar nodo) arbol) arbol)
-          false
+          ((lambda (jug)
+     ((lambda (no_use) (jugar-aux (not maquina) jug arbol))(write (car jug))))(jugada (explotar-opciones nodo) arbol))
+          
+          (jugar-aux (not maquina) (list (read) (remainder (+ 1 (get-minmax nodo)) 2) -2 -1) arbol)
           )))
 ;jugada de máquina
+(define (recuperar-puntuacion nodo arbol)
+  (if (equal? nodo (list (get-tab (car arbol)) (get-minmax (car arbol))))
+      (get-pun (car arbol))
+      (recuperar-puntuacion nodo (cdr arbol))))
+;devuelve un nodo ganador de entre las opciones, o el último perdedor si no hay ganador
 (define (jugada opciones arbol)
-  false)
+  (if (empty? (cdr opciones))
+      (car opciones) ;si es el último nodo se devuelve, independientemente de que sea o no ganador
+      ;max (0) busca 1 y min (1) busca 0. Por tanto para que jugada sea
+      ;ganadora, maxmin != puntuacion
+      (if (= (get-minmax (car opciones)) (recuperar-puntuacion (list (get-tab (car opciones)) (get-minmax (car opciones))) arbol))
+          (car opciones)
+          (jugada (cdr opciones) arbol)
+          )
+      )
+  )
+   
+       
+;(recuperar-puntuacion '((1 2) 0) (plantar 3))
+;(jugar-aux (not maquina) (jugada (explotar nodo) arbol) arbol)
