@@ -31,20 +31,43 @@
 ;devuelve 0 si no ha sido explotado o 1 si no tiene valor
 (define (get-tipo nodo) (third nodo))
 ;devuelve la puntuación
-(define (get-pun nodo) (forth nodo))
+(define (get-pun nodo) (fourth nodo))
 
 ;codificación del algoritmo
 ;minimo de una lista
 (define (min-l lista) (car (sort lista <)))
 ;maximo de una lista
-(define (min-l lista) (car (sort lista >)))
+(define (max-l lista) (car (sort lista >)))
 ;calcula los hijos de un nodo
-(define (explotar nodo opizq opder)
-  (if (equal? '(1 1))))
-(define (explotar_izq nodo n hijos)
-  (if (= n (first nodo))
+(define (explotar nodo)
+  (append (list (explotar-izq nodo 1 '() (first (get-tab nodo)))) ;hijos jugando por la izquierda
+          (list (explotar-der nodo 1 '() (second (get-tab nodo)))) ;hijos jugando por la derecha
+          (list (list (get-tab nodo) (get-minmax nodo) -1 (get-pun nodo)));mismo nodo, para hacer backtracking
+          ))
+
+(define (explotar-izq nodo n hijos max)
+  (if (= n max)
       hijos
-      (explotar_izq (list (- (first nodo) n) (second nodo)) (+ n 1)
+      ((lambda (x) (explotar-izq x (+ n 1) (append hijos (list x)) max)) 
+       (list 
+        (list (- (first (get-tab nodo)) n) (second (get-tab nodo)));tab
+        (remainder (+ 1 (get-minmax nodo)) 2); min-max
+        -2 ;no explotado
+        -1 ;no tiene puntuacion
+        ))
+      ))
+(define (explotar-der nodo n hijos max)
+  (if (= n max)
+      hijos
+      ((lambda (x) (explotar-izq x (+ n 1) (append hijos (list x)) max)) 
+       (list 
+        (list (first (get-tab nodo)) (- (second (get-tab nodo)) n));tab
+        (remainder (+ 1 (get-minmax nodo)) 2); min-max
+        -2 ;no explotado
+        -1 ;no tiene puntuacion
+        ))
+      ))
+                                                                                   
               
 
 ;plantar crea el árbol de decisiones
@@ -73,7 +96,7 @@
               
               
             
-                   
+                   )))))
                    
       
       
