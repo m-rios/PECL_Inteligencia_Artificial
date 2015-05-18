@@ -71,13 +71,13 @@
 (define (plantar-aux actual abiertos puntuaciones arbol)
   (if (and (empty? abiertos) (not(empty? arbol))) ;si abiertos vacio y arbol no vacio, casi se ha terminado el árbol
       (cons 
-       (list (get-tab actual) (get-minmax actual) (min-l (car puntuaciones))) (list arbol))    ;igual en vez de (list arbol) es arbol solo
+       (list (get-tab actual) (get-minmax actual) (min-l (car puntuaciones))) arbol)    ;igual en vez de (list arbol) es arbol solo
       (if (equal? '(1 1) (get-tab actual))
           (plantar-aux (car abiertos);actual'
                    (cdr abiertos);abiertos'
                    (cons (cons (get-minmax actual) (car puntuaciones))
                          (cdr puntuaciones));se añade puntuación actual a la puntuación del nivel
-                   (cons (list (get-tab actual) (get-minmax actual) (get-minmax actual)) (list arbol));se añade nodo actual al arbol
+                   (cons (list (get-tab actual) (get-minmax actual) (get-minmax actual)) arbol);se añade nodo actual al arbol
                    )
           (if (= (get-tipo actual) -1) ;no puntuado
               (plantar-aux (car abiertos);actual'
