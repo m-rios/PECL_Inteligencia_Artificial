@@ -38,52 +38,49 @@
 (define (min-l lista) (car (sort lista <)))
 ;maximo de una lista
 (define (max-l lista) (car (sort lista >)))
-;calcula los hijos de un nodo
+;calcula los hijos de un nodo del árbol de búsqueda
 (define (explotar nodo)
-  (append (explotar-izq nodo 1 '() (first (get-tab nodo))) ;hijos jugando por la izquierda
-          (explotar-der nodo 1 '() (second (get-tab nodo))) ;hijos jugando por la derecha
+  (append (explotar-izq nodo '() (first (get-tab nodo))) ;hijos jugando por la izquierda
+          (explotar-der nodo '() (second (get-tab nodo))) ;hijos jugando por la derecha
           (list (list (get-tab nodo) (get-minmax nodo) -1 (get-pun nodo)));mismo nodo, para hacer backtracking
           ))
-
-(define (explotar-izq nodo n hijos max)
-  (if (= n max)
+(define (explotar-izq nodo hijos max)
+  (if (= 1 (first (get-tab nodo)))
       hijos
-      ((lambda (x) (explotar-izq x (+ n 1) (append hijos (list x)) max)) 
+      ((lambda (x) (explotar-izq x (append hijos (list x)) max)) 
        (list 
-        (list (- (first (get-tab nodo)) n) (second (get-tab nodo)));tab
+        (list (- (first (get-tab nodo)) 1) (second (get-tab nodo)));tab
         (remainder (+ 1 (get-minmax nodo)) 2); min-max
         -2 ;no explotado
         -1 ;no tiene puntuacion
         ))
       ))
-(define (explotar-der nodo n hijos max)
-  (if (= n max)
+
+(define (explotar-der nodo hijos max)
+  (if (= 1 (second (get-tab nodo)))
       hijos
-      ((lambda (x) (explotar-izq x (+ n 1) (append hijos (list x)) max)) 
+      ((lambda (x) (explotar-der x (append hijos (list x)) max)) 
        (list 
-        (list (first (get-tab nodo)) (- (second (get-tab nodo)) n));tab
+        (list (first (get-tab nodo)) (- (second (get-tab nodo)) 1));tab
         (remainder (+ 1 (get-minmax nodo)) 2); min-max
         -2 ;no explotado
         -1 ;no tiene puntuacion
         ))
-      ))
-                                                                                   
-              
-
-;plantar crea el árbol de decisiones
-(define (plantar actual abiertos puntuaciones arbol)
+      ))                                                                                     
+;crea el árbol de decisiones 
+(define (plantar-aux actual abiertos puntuaciones arbol)
   (if (and (empty? abiertos) (not(empty? arbol))) ;si abiertos vacio y arbol no vacio, casi se ha terminado el árbol
       (cons 
-       (list (get-tab actual) (get-minmax actual) (get-tipo actual) (min-l (car puntuaciones))) arbol)    ;igual en vez de (list arbol) es arbol solo
+       (list (get-tab actual) (get-minmax actual) (min-l (car puntuaciones))) (list arbol))    ;igual en vez de (list arbol) es arbol solo
       (if (equal? '(1 1) (get-tab actual))
-          (plantar (car abiertos);actual'
+          (plantar-aux (car abiertos);actual'
                    (cdr abiertos);abiertos'
                    (cons (cons (get-minmax actual) (car puntuaciones))
                          (cdr puntuaciones));se añade puntuación actual a la puntuación del nivel
                    (cons (list (get-tab actual) (get-minmax actual) (get-minmax actual)) (list arbol));se añade nodo actual al arbol
                    )
           (if (= (get-tipo actual) -1) ;no puntuado
-              (plantar (car abiertos);actual'
+              (plantar-aux (car abiertos);actual'
                        (cdr abiertos);abiertos'
                        ;calcular puntuación del nodo en función de sus hijos, y añadir
                        ;esa puntuación a la lista de puntuaciones del nivel del nodo
@@ -91,7 +88,7 @@
                              (cddr puntuaciones))
                        (cons (list (get-tab actual) (get-minmax actual) (min-l (car puntuaciones))) arbol)) ;se añade el nodo puntuado
               ;si no, tiene que ser no explotado (tipo = -2)
-              ((lambda (x) (plantar (car x);actual'
+              ((lambda (x) (plantar-aux (car x);actual'
                        (cdr x) ;se añaden hijos menos el primero para busqueda en profundidad
                        (cons '() puntuaciones) ;se añade nivel al arbol de puntuaciones
                        arbol ;no se ha puntuado ningun nodo, se pasa igual
@@ -100,9 +97,21 @@
           )
       )
   )
-                       
-(define test (plantar '((1 2) 1 -2 -1) '(((2 1) 1 -2 -1) ((2 2) 0 -1 -1)) '(()) '()))
-
-                   
-      
-      
+;inicializa los parámetros para el algoritmo
+(define (plantar n) 
+  (if (= n 0)
+      "no tiene sentido jugar si no hay divisiones"
+      (plantar-aux (list (dinA n) 0 -2 -1) '() '() '()))
+  )
+;algoritmo que implementa las jugadas
+(define (jugar-aux maquina nodo arbol)
+  (if (equal? (first nodo) '(1 1))
+      (if maquina "tu ganas" "perdiste!")
+      (if maquina
+          (jugar-aux (not maquina) (jugada (explotar nodo) arbol) arbol)
+          false
+          )))
+;jugada de máquina
+(define (jugada opciones arbol)
+  false)
+(explotar-der '((4 4) 0 0 0) '() 4)
