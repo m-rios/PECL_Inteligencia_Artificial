@@ -40,8 +40,8 @@
 (define (max-l lista) (car (sort lista >)))
 ;calcula los hijos de un nodo
 (define (explotar nodo)
-  (append (list (explotar-izq nodo 1 '() (first (get-tab nodo)))) ;hijos jugando por la izquierda
-          (list (explotar-der nodo 1 '() (second (get-tab nodo)))) ;hijos jugando por la derecha
+  (append (explotar-izq nodo 1 '() (first (get-tab nodo))) ;hijos jugando por la izquierda
+          (explotar-der nodo 1 '() (second (get-tab nodo))) ;hijos jugando por la derecha
           (list (list (get-tab nodo) (get-minmax nodo) -1 (get-pun nodo)));mismo nodo, para hacer backtracking
           ))
 
@@ -72,15 +72,15 @@
 
 ;plantar crea el árbol de decisiones
 (define (plantar actual abiertos puntuaciones arbol)
-  (if (empty? abiertos) ;si abiertos vacio, casi se ha terminado el árbol
+  (if (and (empty? abiertos) (not(empty? arbol))) ;si abiertos vacio y arbol no vacio, casi se ha terminado el árbol
       (cons 
-       (list (get-tab actual) (get-minmax actual) (get-tipo actual) (min-l (car puntuaciones))) (list arbol))    ;igual en vez de (list arbol) es arbol solo
-      (if (equal? '(1 1) actual)
+       (list (get-tab actual) (get-minmax actual) (get-tipo actual) (min-l (car puntuaciones))) arbol)    ;igual en vez de (list arbol) es arbol solo
+      (if (equal? '(1 1) (get-tab actual))
           (plantar (car abiertos);actual'
                    (cdr abiertos);abiertos'
                    (cons (cons (get-minmax actual) (car puntuaciones))
                          (cdr puntuaciones));se añade puntuación actual a la puntuación del nivel
-                   (cons actual (list arbol));se añade nodo actual al arbol
+                   (cons (list (get-tab actual) (get-minmax actual) (get-minmax actual)) (list arbol));se añade nodo actual al arbol
                    )
           (if (= (get-tipo actual) -1) ;no puntuado
               (plantar (car abiertos);actual'
@@ -89,14 +89,20 @@
                        ;esa puntuación a la lista de puntuaciones del nivel del nodo
                        (cons (cons (min-l (car puntuaciones)) (cadr puntuaciones))                                        ;en vez de min hay que hacer minmax
                              (cddr puntuaciones))
-                       (cons (list (get-tab actual) (get-minmax actual) (get-tipo actual) (min-l (car puntuaciones))) arbol))
+                       (cons (list (get-tab actual) (get-minmax actual) (min-l (car puntuaciones))) arbol)) ;se añade el nodo puntuado
               ;si no, tiene que ser no explotado (tipo = -2)
-              (plantar (car abiertos);actual'
-                       (cdr abiertos)
-              
-              
-            
-                   )))))
+              ((lambda (x) (plantar (car x);actual'
+                       (cdr x) ;se añaden hijos menos el primero para busqueda en profundidad
+                       (cons '() puntuaciones) ;se añade nivel al arbol de puntuaciones
+                       arbol ;no se ha puntuado ningun nodo, se pasa igual
+                       ))(append (explotar actual) abiertos))
+              )
+          )
+      )
+  )
+                       
+(define test (plantar '((1 2) 1 -2 -1) '(((2 1) 1 -2 -1) ((2 2) 0 -1 -1)) '(()) '()))
+
                    
       
       
