@@ -118,7 +118,9 @@
   )
 ;inicializa los parámetros para jugar-aux
 (define (jugar n)
-  (jugar-aux true (list (dinA n) 0 -2 -1) (plantar n)))
+  ((lambda (x)((lambda(y) ((lambda (z)
+  (jugar-aux true (list x 0 -2 -1) (plantar n)))(write x))) (write "nodo inicial: ")))(dinA n)))
+
 ;algoritmo que implementa las jugadas
 (define (jugar-aux maquina nodo arbol)
   (if (equal? (first nodo) '(1 1))
@@ -146,7 +148,3 @@
           )
       )
   )
-   
-       
-;(recuperar-puntuacion '((1 2) 0) (plantar 3))
-;(jugar-aux (not maquina) (jugada (explotar nodo) arbol) arbol)
