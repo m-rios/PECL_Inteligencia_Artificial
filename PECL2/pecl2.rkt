@@ -119,7 +119,7 @@
 ;inicializa los parámetros para jugar-aux
 (define (jugar n)
   ((lambda (x)((lambda(y) ((lambda (z)
-  (jugar-aux true (list x 0 -2 -1) (plantar n)))(write x))) (write "nodo inicial: ")))(dinA n)))
+  (jugar-aux random-max (list x 0 -2 -1) (plantar n)))(write x))) (write "nodo inicial: ")))(dinA n)))
 
 ;algoritmo que implementa las jugadas
 (define (jugar-aux maquina nodo arbol)
@@ -131,6 +131,11 @@
           
           (jugar-aux (not maquina) (list (read) (remainder (+ 1 (get-minmax nodo)) 2) -2 -1) arbol)
           )))
+(define random-max 
+  (if (= (random 2) 1) 
+      true ;la máquina es max
+      false; el jugador es max
+      ))
 ;jugada de máquina
 (define (recuperar-puntuacion nodo arbol)
   (if (equal? nodo (list (get-tab (car arbol)) (get-minmax (car arbol))))
@@ -140,8 +145,7 @@
 (define (jugada opciones arbol)
   (if (empty? (cdr opciones))
       (car opciones) ;si es el último nodo se devuelve, independientemente de que sea o no ganador
-      ;max (0) busca 1 y min (1) busca 0. Por tanto para que jugada sea
-      ;ganadora, maxmin != puntuacion
+      ;para que jugada sea ganadora, la puntuación de la jugada tiene que ser igual que la puntuación del nodo padre
       (if (= (get-minmax (car opciones)) (recuperar-puntuacion (list (get-tab (car opciones)) (get-minmax (car opciones))) arbol))
           (car opciones)
           (jugada (cdr opciones) arbol)
